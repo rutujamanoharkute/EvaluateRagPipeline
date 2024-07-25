@@ -19,7 +19,7 @@ To run the notebook, you need the following:
 Install the necessary packages using the following command:
 
 ```bash
-pip install pandas openai pinecone-client seaborn matplotlib streamlit python-dotenv ragas
+pip install -r requirements.txt
 ```
 
 ## Dataset
@@ -112,6 +112,27 @@ The evaluation of the RAG pipeline was conducted using a set of questions relate
 | Can you suggest a recipe for a comforting soup?             | 0.86         | 0.82             | 1.2               |
 | What are some easy breakfast ideas?                         | 0.87         | 0.86             | 1.3               |
 
+
+## Challenges Addressed
+
+Based on the evaluation, several challenges were identified and addressed:
+
+1. **Context Precision and Recall**:
+   - **Challenge**: The system struggled to consistently retrieve highly relevant contexts for the user's queries.
+   - **Solution**: Implemented improvements in the context retrieval algorithm by refining the query processing and enhancing the relevance ranking mechanism.
+
+2. **Faithfulness of Generated Answers**:
+   - **Challenge**: Some generated answers lacked alignment with the provided context, leading to potential inaccuracies.
+   - **Solution**: Enhanced the model's ability to cross-reference retrieved contexts and improved the fidelity of the content generation process.
+
+3. **Handling Noisy Inputs**:
+   - **Challenge**: The system occasionally returned irrelevant information when presented with noisy or unclear queries.
+   - **Solution**: Added pre-processing steps to clean and normalize the input queries, improving the system's robustness against noise.
+
+4. **Latency**:
+   - **Challenge**: The response time for generating answers was inconsistent, affecting user experience.
+   - **Solution**: Optimized the pipeline's efficiency by streamlining the retrieval and generation processes, resulting in faster response times.
+
 ## Visualization
 
 The visualization section provides graphical representations of the evaluation metrics. For example, a bar plot shows the relevancy scores for each query, allowing for a quick comparison of the RAG pipeline's performance across different questions.
@@ -135,3 +156,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 This README provides a detailed overview of your project, including setup instructions, key components, evaluation results, and visualizations. You can customize it further based on your specific needs or preferences. Don't forget to replace the placeholder `path_to_visualization_image` with the actual path to your visualization image file.
+
