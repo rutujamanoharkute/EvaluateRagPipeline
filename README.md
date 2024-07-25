@@ -118,7 +118,7 @@ The visualization section provides graphical representations of the evaluation m
 
 - **Answer Relevancy Bar Plot**: This plot displays the relevancy scores for each query, helping to visualize how well the generated answers align with the questions. The X-axis represents the query index, while the Y-axis represents the relevancy score.
 
-![Relevancy Score Visualization](path_to_visualization_image)
+<img width="1013" alt="image" src="https://github.com/user-attachments/assets/94b91188-4af7-432d-ab12-4a2fe0018300">
 
 This visualization helps in understanding the areas where the RAG pipeline performs well and where improvements are needed.
 
