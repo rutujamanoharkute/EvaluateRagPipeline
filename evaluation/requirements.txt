@@ -1,0 +1,11 @@
+python-dotenv
+pinecone
+openai
+langchain_openai
+ragas
+seaborn
+matplotlib
+numpy
+requests
+pandas
+streamlit

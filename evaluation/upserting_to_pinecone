@@ -1,0 +1,94 @@
+from pinecone import Pinecone, ServerlessSpec
+from dotenv import load_dotenv
+import os
+import pandas as pd
+from openai import OpenAI
+
+
+load_dotenv(verbose=True, override=True)
+
+def _fetch_csv_data(file_path):
+    # Load data from CSV file
+    df = pd.read_csv(file_path)
+    return df
+
+def _delete_and_create_pinecone_index():
+    pinecone_client = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+    # Check if index already exists (it shouldn't if this is the first time)
+    if len(pinecone_client.list_indexes()) > 0:
+        pinecone_client.delete_index(name=pinecone_client.list_indexes()[0].name)
+    
+    # Create index
+    pinecone_client.create_index(
+        'fooddata',
+        dimension=1536,
+        metric='dotproduct',
+        spec=ServerlessSpec(
+            cloud="aws",
+            region="us-east-1"
+        )
+    )
+    print("Deleted previous Pinecone index and created new one")
+
+def _create_embeddings_and_upsert(food_data):
+    pinecone_client = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+    openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    
+    embed_model = "text-embedding-3-small"
+    food_embeddings_to_upsert = []
+    index = pinecone_client.Index('fooddata')
+   
+    for i, row in food_data.iterrows():
+        input_text = f"""The recipe name is "{row.RecipeName}". 
+        It has a preparation time of {row.PrepTimeInMins} minutes, a cook time of "{row.CookTimeInMins}" minutes, and a total time of "{row.TotalTimeInMins}" minutes. This recipe serves "{row.Servings}" people and belongs to 
+        the "{row.Cuisine}" cuisine category. This recipe falls under the "{row.Course}" course category and is suitable for a "{row.Diet}" diet. The ingredients include "{row.Ingredients}".
+        The instructions involve "{row.Instructions}". Additionally, a YouTube link to a video demonstrating the recipe is provided: {row.URL}."""
+  
+        food_embedding = openai_client.embeddings.create(
+            input=input_text if input_text else "Not mentioned", model=embed_model
+        )
+        print(f"Uploaded embedding {i}")
+
+        food_embeddings_to_upsert.append({
+            'id': row.Srno,
+            'values': food_embedding.data[0].embedding,
+            'metadata': {
+                'RecipeName': row.RecipeName,
+                'TotalTimeInMins': row.TotalTimeInMins,
+                'Servings': row.Servings,
+                'Cuisine': row.Cuisine,
+                'Diet': row.Diet,
+                'Course': row.Course,
+                'URL': row.URL,
+                'CookTimeInMins': row.CookTimeInMins,
+                'PrepTimeInMins': row.PrepTimeInMins,
+                'Instructions': row.Instructions,
+                'Ingredients': row.Ingredients
+            }
+        })
+       
+    print("Successfully created all embeddings")
+
+    def chunk_list(lst, batch_size):
+        """Chunk a list into batches of specified size."""
+        for i in range(0, len(lst), batch_size):
+            yield lst[i:i + batch_size]
+
+    # Chunking into batches of 100
+    batched_list = list(chunk_list(food_embeddings_to_upsert, 100))
+
+    # Accessing all chunks
+    count = 0
+    for chunk in batched_list:
+        count += 1
+        index.upsert(index_name='fooddata', vectors=chunk, namespace="Recipe")
+        print(f"Chunk upserted {count}")
+    print("Successfully upserted all")
+
+def fetchDataAndUpsert(file_path):
+    food_data = _fetch_csv_data(file_path)
+    _delete_and_create_pinecone_index()
+    _create_embeddings_and_upsert(food_data)
+
+
+fetchDataAndUpsert('IndianFoodDatasetCSV.csv')
