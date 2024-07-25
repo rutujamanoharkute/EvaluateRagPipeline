@@ -1,4 +1,5 @@
 ## Please refer evaluation/Evaluation_RAG.ipynb for code and evaluation.
+## Youtube video Link : 
 # RAG Pipeline Evaluation
 
 This repository contains a Jupyter Notebook that evaluates a Retrieval-Augmented Generation (RAG) pipeline using the Ragas library. The evaluation focuses on various aspects of the generated content, such as context precision, faithfulness, answer relevancy, and more.
